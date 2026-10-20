@@ -1,0 +1,6 @@
+{
+  "name": "Smart Loan & Interest Calculator",
+  "description": "Calculate Loan EMI, Principal, Interest Rate, and Tenure with auto-calculation, Flat Rate, Reducing Balance, and Fixed Principal Reducing Interest methods.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

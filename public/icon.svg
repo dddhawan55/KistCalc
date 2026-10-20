@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <rect width="512" height="512" rx="128" fill="#047857"/>
+  <rect x="96" y="80" width="320" height="100" rx="20" fill="#065f46" stroke="#10b981" stroke-width="4"/>
+  <text x="380" y="150" font-family="system-ui, sans-serif" font-weight="bold" font-size="52" fill="#ffffff" text-anchor="end">₹ 16,254</text>
+  <g fill="#ffffff">
+    <!-- Row 1 -->
+    <rect x="96" y="220" width="85" height="65" rx="14" fill="#065f46"/>
+    <rect x="213" y="220" width="85" height="65" rx="14" fill="#065f46"/>
+    <rect x="331" y="220" width="85" height="65" rx="14" fill="#059669"/>
+    
+    <!-- Row 2 -->
+    <rect x="96" y="310" width="85" height="65" rx="14" fill="#065f46"/>
+    <rect x="213" y="310" width="85" height="65" rx="14" fill="#065f46"/>
+    <rect x="331" y="310" width="85" height="65" rx="14" fill="#059669"/>
+
+    <!-- Row 3 -->
+    <rect x="96" y="400" width="85" height="65" rx="14" fill="#065f46"/>
+    <rect x="213" y="400" width="85" height="65" rx="14" fill="#065f46"/>
+    <rect x="331" y="400" width="85" height="65" rx="14" fill="#10b981"/>
+  </g>
+  <text x="138" y="265" font-family="system-ui, sans-serif" font-weight="bold" font-size="32" fill="#ffffff" text-anchor="middle">P</text>
+  <text x="255" y="265" font-family="system-ui, sans-serif" font-weight="bold" font-size="32" fill="#ffffff" text-anchor="middle">%</text>
+  <text x="373" y="265" font-family="system-ui, sans-serif" font-weight="bold" font-size="36" fill="#ffffff" text-anchor="middle">÷</text>
+
+  <text x="138" y="355" font-family="system-ui, sans-serif" font-weight="bold" font-size="32" fill="#ffffff" text-anchor="middle">Mo</text>
+  <text x="255" y="355" font-family="system-ui, sans-serif" font-weight="bold" font-size="32" fill="#ffffff" text-anchor="middle">Yr</text>
+  <text x="373" y="355" font-family="system-ui, sans-serif" font-weight="bold" font-size="36" fill="#ffffff" text-anchor="middle">×</text>
+
+  <text x="138" y="445" font-family="system-ui, sans-serif" font-weight="bold" font-size="34" fill="#ffffff" text-anchor="middle">₹</text>
+  <text x="255" y="445" font-family="system-ui, sans-serif" font-weight="bold" font-size="32" fill="#ffffff" text-anchor="middle">CLR</text>
+  <text x="373" y="445" font-family="system-ui, sans-serif" font-weight="bold" font-size="38" fill="#ffffff" text-anchor="middle">=</text>
+</svg>

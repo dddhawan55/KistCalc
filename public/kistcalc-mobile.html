@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KistCalc - स्मार्ट लोन व ब्याज कैलकुलेटर</title>
+  <style>
+    :root {
+      --primary: #047857;
+      --primary-hover: #065f46;
+      --primary-light: #ecfdf5;
+      --amber: #b45309;
+      --amber-light: #fffbeb;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--slate-50); color: var(--slate-900); padding-bottom: 40px; }
+    .container { max-width: 800px; margin: 0 auto; padding: 12px; }
+    .header { background: white; border-bottom: 1px solid var(--slate-200); padding: 12px 16px; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; color: var(--slate-900); }
+    .brand-icon { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+    .lang-btn { background: var(--slate-100); border: 1px solid var(--slate-200); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 12px 0; }
+    @media(min-width: 600px) { .tabs { grid-template-columns: repeat(4, 1fr); } }
+    .tab { padding: 10px 8px; border-radius: 8px; border: 1px solid var(--slate-200); background: white; text-align: left; cursor: pointer; transition: 0.15s; }
+    .tab.active { border-color: var(--primary); background: var(--primary-light); font-weight: 700; color: var(--primary); }
+    .tab-title { font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px; }
+    .tab-sub { font-size: 10px; color: var(--slate-600); }
+
+    .card { background: white; border: 1px solid var(--slate-200); border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+    .card-title { font-size: 13px; font-weight: 700; color: var(--slate-800); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .target-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; background: var(--slate-100); padding: 4px; border-radius: 8px; }
+    .target-btn { flex: 1; min-width: 70px; padding: 6px 8px; font-size: 11px; font-weight: 600; text-align: center; border-radius: 6px; border: none; background: transparent; cursor: pointer; }
+    .target-btn.active { background: var(--primary); color: white; }
+
+    .field { margin-bottom: 14px; padding: 10px; border-radius: 8px; border: 1px solid var(--slate-200); }
+    .field.is-target { border-color: var(--primary); background: #f0fdf4; }
+    .field-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .field-label { font-size: 12px; font-weight: 700; color: var(--slate-700); }
+    .field-unit-toggle { display: flex; background: var(--slate-100); border-radius: 4px; padding: 2px; }
+    .unit-btn { border: none; background: transparent; padding: 2px 6px; font-size: 10px; font-weight: 600; cursor: pointer; border-radius: 3px; }
+    .unit-btn.active { background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    
+    .input-wrapper { display: flex; align-items: center; border: 1px solid var(--slate-300); border-radius: 6px; background: white; padding: 6px 10px; margin-bottom: 6px; }
+    .input-prefix { font-weight: 700; color: var(--slate-600); margin-right: 6px; font-size: 14px; }
+    .num-input { width: 100%; border: none; outline: none; font-size: 16px; font-weight: 700; color: var(--slate-900); }
+    .num-input:disabled { background: transparent; color: var(--primary); }
+    
+    .presets { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .preset-chip { background: var(--slate-100); border: 1px solid var(--slate-200); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; }
+    .preset-chip:active { background: var(--primary); color: white; }
+    
+    .slider { width: 100%; margin: 6px 0; accent-color: var(--primary); }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .stat-card { background: white; border: 1px solid var(--slate-200); border-radius: 10px; padding: 12px; }
+    .stat-label { font-size: 11px; font-weight: 600; color: var(--slate-600); margin-bottom: 4px; text-transform: uppercase; }
+    .stat-val { font-size: 18px; font-weight: 800; color: var(--slate-900); font-variant-numeric: tabular-nums; }
+    .stat-sub { font-size: 10px; color: var(--slate-600); margin-top: 2px; }
+
+    .split-bar { height: 10px; border-radius: 5px; background: #fbbf24; overflow: hidden; display: flex; margin: 8px 0; }
+    .split-principal { background: var(--primary); height: 100%; transition: width 0.2s; }
+    
+    .banner { padding: 10px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 12px; line-height: 1.4; }
+    .banner-sky { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; }
+    .banner-green { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+    .banner-amber { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: right; }
+    th, td { padding: 8px 6px; border-bottom: 1px solid var(--slate-200); }
+    th { background: var(--slate-100); font-weight: 700; color: var(--slate-700); }
+    td:first-child, th:first-child { text-align: left; }
+    .table-container { max-height: 300px; overflow-y: auto; border: 1px solid var(--slate-200); border-radius: 8px; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; }
+    .btn-dark { background: var(--slate-900); color: white; }
+    .btn-outline { background: white; border: 1px solid var(--slate-300); color: var(--slate-700); }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon">₹</div>
+      <div>
+        <div style="line-height: 1.1;">KistCalc</div>
+        <div style="font-size: 10px; color: var(--slate-600); font-weight: normal;" id="headerSub">स्मार्ट ब्याज व ईएमआई कैलकुलेटर</div>
+      </div>
+    </div>
+    <button class="lang-btn" onclick="toggleLang()" id="langBtn">English</button>
+  </header>
+
+  <div class="container">
+
+    <!-- Method Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="setMethod('reducing')" id="tabReducing">
+        <span class="tab-title" id="tRedTitle">1. घटता ब्याज</span>
+        <span class="tab-sub" id="tRedSub">बैंक ईएमआई</span>
+      </div>
+      <div class="tab" onclick="setMethod('flat')" id="tabFlat">
+        <span class="tab-title" id="tFlatTitle">2. फ्लैट ब्याज</span>
+        <span class="tab-sub" id="tFlatSub">वाहन/लोकल लोन</span>
+      </div>
+      <div class="tab" onclick="setMethod('fixed_principal')" id="tabFixed">
+        <span class="tab-title" id="tFixTitle">3. फिक्स्ड मूलधन</span>
+        <span class="tab-sub" id="tFixSub">घटती किस्त</span>
+      </div>
+      <div class="tab" onclick="setMethod('compare')" id="tabCompare">
+        <span class="tab-title" id="tCompTitle">तीनों की तुलना</span>
+        <span class="tab-sub" id="tCompSub">बचत देखें</span>
+      </div>
+    </div>
+
+    <!-- Target Selector -->
+    <div class="card" style="padding: 10px 12px;">
+      <div style="font-size: 11px; font-weight: 700; color: var(--slate-600); margin-bottom: 6px;" id="targetHeading">
+        ⚡ आप क्या निकालना चाहते हैं? (Auto-Calculate):
+      </div>
+      <div class="target-bar">
+        <button class="target-btn active" onclick="setTarget('emi')" id="tgEmi">ईएमआई (EMI)</button>
+        <button class="target-btn" onclick="setTarget('principal')" id="tgPrincipal">लोन राशि (P)</button>
+        <button class="target-btn" onclick="setTarget('tenure')" id="tgTenure">अवधि (Tenure)</button>
+        <button class="target-btn" onclick="setTarget('rate')" id="tgRate">ब्याज दर (Rate)</button>
+      </div>
+    </div>
+
+    <!-- Single Calculator View -->
+    <div id="calcView">
+      
+      <!-- Method 3 Info Banner -->
+      <div id="fixedBanner" class="banner banner-sky" style="display: none;">
+        <strong>फिक्स्ड मूलधन + घटता ब्याज:</strong> हर महीने मूलधन बराबर कटता है और ब्याज सिर्फ बचे हुए बैलेंस पर लगता है। पहली किस्त सबसे ज्यादा होती है और हर महीने किस्त घटती जाती है। कुल ब्याज सबसे कम इसी में लगता है!
+      </div>
+
+      <!-- INPUTS -->
+      <div class="card">
+        <!-- 1. Principal -->
+        <div class="field" id="fPrincipal">
+          <div class="field-label-row">
+            <span class="field-label" id="lblPrincipal">1. मूलधन / लोन राशि (Principal)</span>
+            <span style="font-size: 11px; font-weight: 700; color: var(--primary);" id="txtWords">5.00 Lakh</span>
+          </div>
+          <div class="input-wrapper">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="inPrincipal" class="num-input" value="500000" oninput="onValChange('principal')">
+          </div>
+          <input type="range" id="slPrincipal" class="slider" min="10000" max="5000000" step="10000" value="500000" oninput="onSlideChange('principal')">
+          <div class="presets">
+            <span class="preset-chip" onclick="setVal('principal', 100000)">₹1L</span>
+            <span class="preset-chip" onclick="setVal('principal', 300000)">₹3L</span>
+            <span class="preset-chip" onclick="setVal('principal', 500000)">₹5L</span>
+            <span class="preset-chip" onclick="setVal('principal', 1000000)">₹10L</span>
+            <span class="preset-chip" onclick="setVal('principal', 2500000)">₹25L</span>
+          </div>
+        </div>
+
+        <!-- 2. Rate -->
+        <div class="field" id="fRate">
+          <div class="field-label-row">
+            <span class="field-label" id="lblRate">2. ब्याज दर (Interest Rate)</span>
+            <div class="field-unit-toggle">
+              <button class="unit-btn active" id="btnRateYr" onclick="setRateUnit('yearly')">वार्षिक %</button>
+              <button class="unit-btn" id="btnRateMo" onclick="setRateUnit('monthly')">मासिक %</button>
+            </div>
+          </div>
+          <div class="input-wrapper">
+            <input type="number" id="inRate" class="num-input" value="10.5" step="0.25" oninput="onValChange('rate')">
+            <span class="input-prefix" style="margin-left: 6px;">%</span>
+          </div>
+          <div style="font-size: 11px; color: var(--slate-600); margin-bottom: 4px;" id="txtRateNote">
+            मासिक: 0.88% (₹0.88 सैकड़ा प्रति माह)
+          </div>
+          <input type="range" id="slRate" class="slider" min="1" max="36" step="0.25" value="10.5" oninput="onSlideChange('rate')">
+          <div class="presets">
+            <span class="preset-chip" onclick="setVal('rate', 8.5)">8.5%</span>
+            <span class="preset-chip" onclick="setVal('rate', 10.5)">10.5%</span>
+            <span class="preset-chip" onclick="setVal('rate', 12.0)">12%</span>
+            <span class="preset-chip" onclick="setVal('rate', 18.0)">18%</span>
+            <span class="preset-chip" onclick="setVal('rate', 24.0)">24%</span>
+          </div>
+        </div>
+
+        <!-- 3. Tenure -->
+        <div class="field" id="fTenure">
+          <div class="field-label-row">
+            <span class="field-label" id="lblTenure">3. अवधि (Tenure)</span>
+            <div class="field-unit-toggle">
+              <button class="unit-btn active" id="btnTenureYr" onclick="setTenureUnit('years')">वर्ष (Yr)</button>
+              <button class="unit-btn" id="btnTenureMo" onclick="setTenureUnit('months')">महीने (Mo)</button>
+            </div>
+          </div>
+          <div class="input-wrapper">
+            <input type="number" id="inTenure" class="num-input" value="3" step="0.5" oninput="onValChange('tenure')">
+            <span class="input-prefix" id="txtTenureUnit" style="margin-left: 6px; font-size: 12px;">वर्ष</span>
+          </div>
+          <div style="font-size: 11px; color: var(--slate-600); margin-bottom: 4px;" id="txtTenureNote">
+            कुल किश्तें: 36 EMIs
+          </div>
+          <input type="range" id="slTenure" class="slider" min="1" max="30" step="1" value="3" oninput="onSlideChange('tenure')">
+          <div class="presets">
+            <span class="preset-chip" onclick="setVal('tenureMonths', 12)">1 Yr</span>
+            <span class="preset-chip" onclick="setVal('tenureMonths', 24)">2 Yr</span>
+            <span class="preset-chip" onclick="setVal('tenureMonths', 36)">3 Yr</span>
+            <span class="preset-chip" onclick="setVal('tenureMonths', 60)">5 Yr</span>
+            <span class="preset-chip" onclick="setVal('tenureMonths', 120)">10 Yr</span>
+          </div>
+        </div>
+
+        <!-- 4. EMI -->
+        <div class="field is-target" id="fEmi">
+          <div class="field-label-row">
+            <span class="field-label" id="lblEmi">4. प्रति ईएमआई राशि (Monthly EMI)</span>
+            <span style="font-size: 10px; font-weight: 700; background: #bbf7d0; color: #15803d; padding: 2px 6px; border-radius: 4px;" id="badgeEmi">⚡ ऑटो कैलकुलेटेड</span>
+          </div>
+          <div class="input-wrapper">
+            <span class="input-prefix">₹</span>
+            <input type="number" id="inEmi" class="num-input" value="16254" disabled oninput="onValChange('emi')">
+          </div>
+          <div style="font-size: 11px; color: var(--slate-600);" id="txtEmiNote">
+            प्रति माह 36 किश्तों तक देय
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTS STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label" id="stEmiLbl">मासिक ईएमआई</div>
+          <div class="stat-val" id="resEmi">₹16,254</div>
+          <div class="stat-sub" id="resEmiSub">प्रति माह</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label" id="stIntLbl">कुल ब्याज</div>
+          <div class="stat-val" style="color: var(--amber);" id="resInterest">₹85,130</div>
+          <div class="stat-sub" id="resInterestSub">14.5% ब्याज</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label" id="stPayLbl">कुल भुगतान</div>
+          <div class="stat-val" id="resPayable">₹5,85,130</div>
+          <div class="stat-sub" id="resPayableSub">मूलधन + ब्याज</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label" id="stSplitLbl">मूलधन vs ब्याज</div>
+          <div class="stat-val" style="font-size: 15px;" id="resSplit">85% vs 15%</div>
+          <div class="split-bar">
+            <div class="split-principal" id="barPrincipal" style="width: 85%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. IN-EMI PRINCIPAL VS INTEREST BREAKDOWN -->
+      <div class="card">
+        <div class="card-title">
+          <span id="bkTitle">5. हर EMI में मूलधन व ब्याज का बंटवारा</span>
+          <span style="font-size: 11px; color: var(--primary);" id="bkMonthNum">महीना #1</span>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <input type="range" id="slBreakdown" class="slider" min="1" max="36" value="1" oninput="onBreakdownMonthChange(this.value)">
+        </div>
+
+        <div style="background: var(--slate-100); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 4px;">
+            <span id="bkEmiText">किस्त: ₹16,254</span>
+            <span style="color: var(--slate-600); font-size: 11px;" id="bkBalText">बाकी: ₹4,88,081</span>
+          </div>
+          <div class="split-bar" style="height: 12px;">
+            <div class="split-principal" id="barBkPrincipal" style="width: 73%;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px;">
+            <span style="color: var(--primary); font-weight: 700;" id="bkPrincText">मूलधन: ₹11,921 (73%)</span>
+            <span style="color: var(--amber); font-weight: 700;" id="bkIntText">ब्याज: ₹4,333 (27%)</span>
+          </div>
+        </div>
+      <!-- 6. PREPAYMENT SIMULATOR -->
+      <div class="card" id="prepCard">
+        <div class="card-title">
+          <span id="txtPrepTitle">⚡ लोन प्री-पेमेंट व पार्ट-पेमेंट सिम्युलेटर</span>
+          <label style="font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <input type="checkbox" id="chkPrepay" onchange="togglePrepay(this.checked)"> <span id="txtPrepEnable">ऑन करें</span>
+          </label>
+        </div>
+
+        <div id="prepContent" style="display: none;">
+          <!-- Impact banner -->
+          <div id="prepBanner" class="banner banner-green" style="display: none; margin-bottom: 10px;">
+            <strong id="txtPrepImpact">🎉 प्री-पेमेंट का असर:</strong>
+            <div style="display: flex; justify-content: space-between; margin-top: 4px; font-weight: 700;">
+              <span>बचत: <span id="prepSavedInt">₹0</span></span>
+              <span id="prepSavedMo">0 माह पहले</span>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 700; color: var(--slate-700); display: block; margin-bottom: 2px;" id="lblPrepMo">हर माह अतिरिक्त (₹):</label>
+              <input type="number" id="inPrepMonthly" class="num-input" style="border: 1px solid var(--slate-300); border-radius: 6px; padding: 6px;" value="0" placeholder="e.g. 2000" oninput="onPrepayChange()">
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 700; color: var(--slate-700); display: block; margin-bottom: 2px;" id="lblPrepOne">एकमुश्त पार्ट-पेमेंट (₹):</label>
+              <input type="number" id="inPrepOneAmt" class="num-input" style="border: 1px solid var(--slate-300); border-radius: 6px; padding: 6px;" value="0" placeholder="e.g. 50000" oninput="onPrepayChange()">
+            </div>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <label style="font-size: 11px; font-weight: 700; color: var(--slate-700); display: block; margin-bottom: 2px;" id="lblPrepMoNum">एकमुश्त भुगतान का महीना #:</label>
+            <input type="number" id="inPrepOneMonth" class="num-input" style="border: 1px solid var(--slate-300); border-radius: 6px; padding: 6px; width: 120px;" value="6" min="1" oninput="onPrepayChange()">
+          </div>
+        </div>
+      </div>
+
+      <!-- AMORTIZATION TABLE -->
+      <div class="card">
+        <div class="card-title">
+          <span id="tblTitle">महीनेवार किस्तों की सूची (Schedule)</span>
+          <button class="btn btn-outline" style="padding: 4px 8px; font-size: 10px;" onclick="exportCSV()">📥 CSV डाउनलोड</button>
+        </div>
+        <div class="table-container">
+          <table id="schedTable">
+            <thead>
+              <tr>
+                <th>माह #</th>
+                <th>किस्त (EMI)</th>
+                <th>मूलधन</th>
+                <th>ब्याज</th>
+                <th>बाकी</th>
+              </tr>
+            </thead>
+            <tbody id="schedBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Compare View -->
+    <div id="compareView" style="display: none;">
+      <div class="card">
+        <div class="card-title" id="cmpHeading">तीनों तरीकों की तुलना (Comparison)</div>
+        <div id="cmpContent"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let lang = 'hi';
+    let currentMethod = 'reducing';
+    let targetField = 'emi';
+    let rateUnit = 'yearly'; // 'yearly' | 'monthly'
+    let tenureUnit = 'years'; // 'years' | 'months'
+    
+    let P = 500000;
+    let annualR = 10.5;
+    let tenureMonths = 36;
+    let emiVal = 16254;
+
+    let prepayEnabled = false;
+    let prepayMonthly = 0;
+    let prepayOnetimeAmt = 0;
+    let prepayOnetimeMonth = 6;
+
+    function togglePrepay(enabled) {
+      prepayEnabled = enabled;
+      document.getElementById('prepContent').style.display = enabled ? 'block' : 'none';
+      recalc();
+    }
+
+    function onPrepayChange() {
+      prepayMonthly = Math.max(0, Number(document.getElementById('inPrepMonthly').value));
+      prepayOnetimeAmt = Math.max(0, Number(document.getElementById('inPrepOneAmt').value));
+      prepayOnetimeMonth = Math.max(1, Number(document.getElementById('inPrepOneMonth').value));
+      recalc();
+    }
+
+    function formatINR(val) {
+      if (isNaN(val)) return '₹0';
+      const rounded = Math.round(val);
+      const str = rounded.toString();
+      let lastThree = str.substring(str.length - 3);
+      const otherNumbers = str.substring(0, str.length - 3);
+      if (otherNumbers !== '') lastThree = ',' + lastThree;
+      const res = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+      return '₹' + res;
+    }
+
+    function inWords(amount) {
+      if (amount >= 10000000) return (amount / 10000000).toFixed(2) + ' Cr';
+      if (amount >= 100000) return (amount / 100000).toFixed(2) + ' Lakh';
+      if (amount >= 1000) return (amount / 1000).toFixed(1) + ' K';
+      return Math.round(amount).toString();
+    }
+
+    function setMethod(m) {
+      currentMethod = m;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      if (m === 'reducing') document.getElementById('tabReducing').classList.add('active');
+      if (m === 'flat') document.getElementById('tabFlat').classList.add('active');
+      if (m === 'fixed_principal') document.getElementById('tabFixed').classList.add('active');
+      if (m === 'compare') document.getElementById('tabCompare').classList.add('active');
+
+      if (m === 'compare') {
+        document.getElementById('calcView').style.display = 'none';
+        document.getElementById('compareView').style.display = 'block';
+        renderCompare();
+      } else {
+        document.getElementById('calcView').style.display = 'block';
+        document.getElementById('compareView').style.display = 'none';
+        document.getElementById('fixedBanner').style.display = (m === 'fixed_principal') ? 'block' : 'none';
+        recalc();
+      }
+    }
+
+    function setTarget(t) {
+      targetField = t;
+      document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.field').forEach(f => f.classList.remove('is-target'));
+
+      if (t === 'emi') {
+        document.getElementById('tgEmi').classList.add('active');
+        document.getElementById('fEmi').classList.add('is-target');
+      } else if (t === 'principal') {
+        document.getElementById('tgPrincipal').classList.add('active');
+        document.getElementById('fPrincipal').classList.add('is-target');
+      } else if (t === 'tenure') {
+        document.getElementById('tgTenure').classList.add('active');
+        document.getElementById('fTenure').classList.add('is-target');
+      } else if (t === 'rate') {
+        document.getElementById('tgRate').classList.add('active');
+        document.getElementById('fRate').classList.add('is-target');
+      }
+
+      document.getElementById('inPrincipal').disabled = (t === 'principal');
+      document.getElementById('slPrincipal').disabled = (t === 'principal');
+      document.getElementById('inRate').disabled = (t === 'rate');
+      document.getElementById('slRate').disabled = (t === 'rate');
+      document.getElementById('inTenure').disabled = (t === 'tenure');
+      document.getElementById('slTenure').disabled = (t === 'tenure');
+      document.getElementById('inEmi').disabled = (t === 'emi');
+
+      document.getElementById('badgeEmi').style.display = (t === 'emi') ? 'inline-block' : 'none';
+      recalc();
+    }
+
+    function setRateUnit(u) {
+      rateUnit = u;
+      document.getElementById('btnRateYr').classList.toggle('active', u === 'yearly');
+      document.getElementById('btnRateMo').classList.toggle('active', u === 'monthly');
+      if (u === 'yearly') {
+        document.getElementById('inRate').value = annualR;
+        document.getElementById('slRate').min = "1";
+        document.getElementById('slRate').max = "36";
+        document.getElementById('slRate').step = "0.25";
+        document.getElementById('slRate').value = annualR;
+      } else {
+        const moR = Math.round((annualR / 12) * 1000) / 1000;
+        document.getElementById('inRate').value = moR;
+        document.getElementById('slRate').min = "0.2";
+        document.getElementById('slRate').max = "3";
+        document.getElementById('slRate').step = "0.05";
+        document.getElementById('slRate').value = moR;
+      }
+      updateRateNote();
+    }
+
+    function updateRateNote() {
+      const moR = (annualR / 12).toFixed(2);
+      if (lang === 'hi') {
+        document.getElementById('txtRateNote').innerText = 'मासिक दर: ' + moR + '% (₹' + moR + ' सैकड़ा प्रति माह) | वार्षिक: ' + annualR + '% p.a.';
+      } else {
+        document.getElementById('txtRateNote').innerText = 'Monthly: ' + moR + '% / month | Annual: ' + annualR + '% p.a.';
+      }
+    }
+
+    function setTenureUnit(u) {
+      tenureUnit = u;
+      document.getElementById('btnTenureYr').classList.toggle('active', u === 'years');
+      document.getElementById('btnTenureMo').classList.toggle('active', u === 'months');
+      if (u === 'years') {
+        document.getElementById('inTenure').value = (tenureMonths / 12).toFixed(1);
+        document.getElementById('txtTenureUnit').innerText = (lang === 'hi') ? 'वर्ष' : 'Yrs';
+        document.getElementById('slTenure').min = "1";
+        document.getElementById('slTenure').max = "30";
+        document.getElementById('slTenure').step = "1";
+        document.getElementById('slTenure').value = Math.round(tenureMonths / 12);
+      } else {
+        document.getElementById('inTenure').value = tenureMonths;
+        document.getElementById('txtTenureUnit').innerText = (lang === 'hi') ? 'महीने' : 'Mo';
+        document.getElementById('slTenure').min = "3";
+        document.getElementById('slTenure').max = "360";
+        document.getElementById('slTenure').step = "6";
+        document.getElementById('slTenure').value = tenureMonths;
+      }
+      updateTenureNote();
+    }
+
+    function updateTenureNote() {
+      if (lang === 'hi') {
+        document.getElementById('txtTenureNote').innerText = 'कुल किश्तें: ' + tenureMonths + ' EMIs (' + (tenureMonths/12).toFixed(1) + ' वर्ष)';
+      } else {
+        document.getElementById('txtTenureNote').innerText = 'Total installments: ' + tenureMonths + ' EMIs (' + (tenureMonths/12).toFixed(1) + ' yrs)';
+      }
+    }
+
+    function onValChange(field) {
+      if (field === 'principal') {
+        P = Math.max(0, Number(document.getElementById('inPrincipal').value));
+        document.getElementById('slPrincipal').value = P;
+      } else if (field === 'rate') {
+        const val = Math.max(0, Number(document.getElementById('inRate').value));
+        annualR = (rateUnit === 'yearly') ? val : (val * 12);
+        document.getElementById('slRate').value = val;
+        updateRateNote();
+      } else if (field === 'tenure') {
+        const val = Math.max(1, Number(document.getElementById('inTenure').value));
+        tenureMonths = (tenureUnit === 'years') ? Math.round(val * 12) : Math.round(val);
+        document.getElementById('slTenure').value = val;
+        updateTenureNote();
+      } else if (field === 'emi') {
+        emiVal = Math.max(0, Number(document.getElementById('inEmi').value));
+      }
+      recalc();
+    }
+
+    function onSlideChange(field) {
+      if (field === 'principal') {
+        P = Number(document.getElementById('slPrincipal').value);
+        document.getElementById('inPrincipal').value = P;
+      } else if (field === 'rate') {
+        const val = Number(document.getElementById('slRate').value);
+        document.getElementById('inRate').value = val;
+        annualR = (rateUnit === 'yearly') ? val : (val * 12);
+        updateRateNote();
+      } else if (field === 'tenure') {
+        const val = Number(document.getElementById('slTenure').value);
+        document.getElementById('inTenure').value = val;
+        tenureMonths = (tenureUnit === 'years') ? Math.round(val * 12) : val;
+        updateTenureNote();
+      }
+      recalc();
+    }
+
+    function setVal(field, val) {
+      if (field === 'principal') {
+        P = val;
+        document.getElementById('inPrincipal').value = val;
+        document.getElementById('slPrincipal').value = val;
+      } else if (field === 'rate') {
+        annualR = val;
+        setRateUnit('yearly');
+      } else if (field === 'tenureMonths') {
+        tenureMonths = val;
+        setTenureUnit(tenureUnit);
+      }
+      recalc();
+    }
+
+    let currentSchedule = [];
+
+    function recalc() {
+      document.getElementById('txtWords').innerText = inWords(P);
+
+      // Reverse solvers
+      if (targetField === 'principal') {
+        if (currentMethod === 'flat') {
+          P = Math.round((emiVal * tenureMonths) / (1 + (annualR / 100) * (tenureMonths / 12)));
+        } else {
+          const r = (annualR > 0) ? (annualR / (12 * 100)) : 0;
+          if (r > 0) {
+            const f = Math.pow(1 + r, tenureMonths);
+            P = Math.round((emiVal * (f - 1)) / (r * f));
+          } else {
+            P = emiVal * tenureMonths;
+          }
+        }
+        document.getElementById('inPrincipal').value = P;
+        document.getElementById('slPrincipal').value = P;
+        document.getElementById('txtWords').innerText = inWords(P);
+      } else if (targetField === 'tenure') {
+        const r = (annualR > 0) ? (annualR / (12 * 100)) : 0;
+        if (emiVal > (P * r)) {
+          if (r > 0) {
+            const n = (Math.log(emiVal) - Math.log(emiVal - P * r)) / Math.log(1 + r);
+            tenureMonths = Math.max(1, Math.round(n));
+          } else {
+            tenureMonths = Math.max(1, Math.round(P / emiVal));
+          }
+          setTenureUnit(tenureUnit);
+        }
+      }
+
+      // Compute schedule & numbers based on method
+      let totalInterest = 0;
+      let totalPayable = 0;
+      let firstEmi = 0;
+      let lastEmi = 0;
+      let avgEmi = 0;
+      currentSchedule = [];
+
+      const r = (annualR > 0) ? (annualR / (12 * 100)) : 0;
+      const n = Math.max(1, tenureMonths);
+
+      if (currentMethod === 'flat') {
+        totalInterest = P * (annualR / 100) * (n / 12);
+        totalPayable = P + totalInterest;
+        avgEmi = totalPayable / n;
+        firstEmi = avgEmi;
+        lastEmi = avgEmi;
+        const pPerMo = P / n;
+        const iPerMo = totalInterest / n;
+        let bal = P;
+        for (let m = 1; m <= n; m++) {
+          bal = Math.max(0, bal - pPerMo);
+          currentSchedule.push({ month: m, emi: avgEmi, principal: pPerMo, interest: iPerMo, balance: bal });
+        }
+      } else if (currentMethod === 'fixed_principal') {
+        const pPerMo = P / n;
+        let bal = P;
+        for (let m = 1; m <= n; m++) {
+          const interest = bal * r;
+          totalInterest += interest;
+          bal = Math.max(0, bal - pPerMo);
+          const emi = pPerMo + interest;
+          if (m === 1) firstEmi = emi;
+          if (m === n) lastEmi = emi;
+          currentSchedule.push({ month: m, emi: emi, principal: pPerMo, interest: interest, balance: bal });
+        }
+        totalPayable = P + totalInterest;
+        avgEmi = totalPayable / n;
+      } else {
+        // Reducing
+        if (r > 0) {
+          const f = Math.pow(1 + r, n);
+          avgEmi = (P * r * f) / (f - 1);
+        } else {
+          avgEmi = P / n;
+        }
+        firstEmi = avgEmi;
+        lastEmi = avgEmi;
+
+        // Baseline interest without prepayments
+        let baseBal = P;
+        let baseInt = 0;
+        for (let m = 1; m <= n; m++) {
+          const it = baseBal * r;
+          let pr = avgEmi - it;
+          if (m === n || pr > baseBal) pr = baseBal;
+          baseBal = Math.max(0, baseBal - pr);
+          baseInt += it;
+          if (baseBal <= 0) break;
+        }
+
+        let bal = P;
+        for (let m = 1; m <= n && bal > 0.01; m++) {
+          const interest = bal * r;
+          let pr = avgEmi - interest;
+          let extra = 0;
+          if (prepayEnabled) {
+            extra += prepayMonthly;
+            if (prepayOnetimeMonth === m) extra += prepayOnetimeAmt;
+          }
+          let totalPr = pr + extra;
+          if (totalPr >= bal) {
+            totalPr = bal;
+            bal = 0;
+          } else {
+            bal -= totalPr;
+          }
+          totalInterest += interest;
+          currentSchedule.push({
+            month: m,
+            emi: totalPr + interest,
+            principal: totalPr,
+            interest: interest,
+            balance: bal,
+            extra: extra
+          });
+        }
+        totalPayable = P + totalInterest;
+
+        if (prepayEnabled && (prepayMonthly > 0 || prepayOnetimeAmt > 0)) {
+          const savedInt = Math.max(0, baseInt - totalInterest);
+          const savedMo = Math.max(0, n - currentSchedule.length);
+          document.getElementById('prepBanner').style.display = 'block';
+          document.getElementById('prepSavedInt').innerText = formatINR(savedInt);
+          document.getElementById('prepSavedMo').innerText = savedMo + (lang === 'hi' ? ' माह पहले लोन खत्म!' : ' months early!');
+        } else {
+          document.getElementById('prepBanner').style.display = 'none';
+        }
+      }
+
+      if (targetField === 'emi') {
+        emiVal = Math.round(firstEmi);
+        document.getElementById('inEmi').value = emiVal;
+      }
+
+      // Update stat cards
+      if (currentMethod === 'fixed_principal') {
+        document.getElementById('stEmiLbl').innerText = (lang === 'hi') ? '1st माह की किस्त' : '1st Month EMI';
+        document.getElementById('resEmi').innerText = formatINR(firstEmi);
+        document.getElementById('resEmiSub').innerText = (lang === 'hi') ? 'आखिर में: ' + formatINR(lastEmi) : 'Drops to: ' + formatINR(lastEmi);
+      } else {
+        document.getElementById('stEmiLbl').innerText = (lang === 'hi') ? 'मासिक ईएमआई' : 'Monthly EMI';
+        document.getElementById('resEmi').innerText = formatINR(avgEmi);
+        document.getElementById('resEmiSub').innerText = (lang === 'hi') ? 'प्रति माह' : 'Per Month';
+      }
+
+      document.getElementById('resInterest').innerText = formatINR(totalInterest);
+      const intPct = (totalPayable > 0) ? ((totalInterest / totalPayable) * 100).toFixed(1) : 0;
+      document.getElementById('resInterestSub').innerText = intPct + '% ' + ((lang === 'hi') ? 'ब्याज' : 'Interest');
+
+      document.getElementById('resPayable').innerText = formatINR(totalPayable);
+
+      const prPct = (totalPayable > 0) ? Math.round((P / totalPayable) * 100) : 100;
+      document.getElementById('resSplit').innerText = prPct + '% vs ' + (100 - prPct) + '%';
+      document.getElementById('barPrincipal').style.width = prPct + '%';
+
+      // Update Breakdown Month Slider
+      const slBk = document.getElementById('slBreakdown');
+      slBk.max = n;
+      if (Number(slBk.value) > n) slBk.value = 1;
+      onBreakdownMonthChange(slBk.value);
+
+      // Render Schedule Table
+      renderTable();
+    }
+
+    function onBreakdownMonthChange(m) {
+      const idx = Math.min(Math.max(1, Number(m)), currentSchedule.length) - 1;
+      const item = currentSchedule[idx] || currentSchedule[0];
+      if (!item) return;
+
+      document.getElementById('bkMonthNum').innerText = (lang === 'hi') ? 'महीना #' + item.month : 'Month #' + item.month;
+      document.getElementById('bkEmiText').innerText = ((lang === 'hi') ? 'किस्त: ' : 'Payment: ') + formatINR(item.emi);
+      document.getElementById('bkBalText').innerText = ((lang === 'hi') ? 'बाकी: ' : 'Balance: ') + formatINR(item.balance);
+
+      const prPct = (item.emi > 0) ? Math.round((item.principal / item.emi) * 100) : 50;
+      document.getElementById('barBkPrincipal').style.width = prPct + '%';
+      document.getElementById('bkPrincText').innerText = ((lang === 'hi') ? 'मूलधन: ' : 'Principal: ') + formatINR(item.principal) + ' (' + prPct + '%)';
+      document.getElementById('bkIntText').innerText = ((lang === 'hi') ? 'ब्याज: ' : 'Interest: ') + formatINR(item.interest) + ' (' + (100 - prPct) + '%)';
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('schedBody');
+      let html = '';
+      const limit = Math.min(currentSchedule.length, 120);
+      for (let i = 0; i < limit; i++) {
+        const m = currentSchedule[i];
+        html += '<tr>' +
+          '<td>#' + m.month + '</td>' +
+          '<td style="font-weight:700;">' + formatINR(m.emi) + '</td>' +
+          '<td style="color:var(--primary);">' + formatINR(m.principal) + '</td>' +
+          '<td style="color:var(--amber);">' + formatINR(m.interest) + '</td>' +
+          '<td style="color:var(--slate-600);">' + formatINR(m.balance) + '</td>' +
+          '</tr>';
+      }
+      tbody.innerHTML = html;
+    }
+
+    function exportCSV() {
+      let csv = 'Month,EMI,Principal,Interest,Balance\n';
+      currentSchedule.forEach(m => {
+        csv += m.month + ',' + Math.round(m.emi) + ',' + Math.round(m.principal) + ',' + Math.round(m.interest) + ',' + Math.round(m.balance) + '\n';
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Loan_Schedule_' + currentMethod + '.csv';
+      a.click();
+    }
+
+    function renderCompare() {
+      const n = Math.max(1, tenureMonths);
+      const r = (annualR > 0) ? (annualR / (12 * 100)) : 0;
+
+      // Reducing
+      const f = (r > 0) ? Math.pow(1 + r, n) : 1;
+      const redEmi = (r > 0) ? (P * r * f) / (f - 1) : (P / n);
+      let redInt = 0;
+      let b = P;
+      for (let i = 0; i < n; i++) {
+        const it = b * r;
+        const pr = Math.min(b, redEmi - it);
+        redInt += it;
+        b -= pr;
+      }
+
+      // Flat
+      const flatInt = P * (annualR / 100) * (n / 12);
+      const flatEmi = (P + flatInt) / n;
+
+      // Fixed Principal
+      const pMo = P / n;
+      let fixInt = 0;
+      let fb = P;
+      for (let i = 0; i < n; i++) {
+        fixInt += fb * r;
+        fb -= pMo;
+      }
+      const fix1st = pMo + (P * r);
+      const fixLast = pMo + (pMo * r);
+
+      const isHi = (lang === 'hi');
+      let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+
+      // 1. Reducing Card
+      html += '<div style="border:1px solid #10b981; border-radius:8px; padding:10px; background:#ecfdf5;">' +
+        '<div style="font-weight:700; color:#065f46; font-size:12px;">1. घटता ब्याज (Reducing EMI - बैंक मानक)</div>' +
+        '<div style="font-size:11px; margin-top:4px;">' + (isHi ? 'मासिक ईएमआई: ' : 'Monthly EMI: ') + '<strong>' + formatINR(redEmi) + '</strong></div>' +
+        '<div style="font-size:11px;">' + (isHi ? 'कुल ब्याज: ' : 'Total Interest: ') + '<strong>' + formatINR(redInt) + '</strong></div>' +
+        '<div style="font-size:10px; color:#047857; margin-top:4px;">' + (isHi ? '✓ बैंक और होम लोन में यही मानक तरीका है।' : 'Standard method in banks.') + '</div>' +
+        '</div>';
+
+      // 2. Flat Card
+      html += '<div style="border:1px solid #f59e0b; border-radius:8px; padding:10px; background:#fffbeb;">' +
+        '<div style="font-weight:700; color:#b45309; font-size:12px;">2. फ्लैट ब्याज (Flat Rate - महंगा विकल्प)</div>' +
+        '<div style="font-size:11px; margin-top:4px;">' + (isHi ? 'मासिक ईएमआई: ' : 'Monthly EMI: ') + '<strong>' + formatINR(flatEmi) + '</strong></div>' +
+        '<div style="font-size:11px;">' + (isHi ? 'कुल ब्याज: ' : 'Total Interest: ') + '<strong style="color:#dc2626;">' + formatINR(flatInt) + '</strong></div>' +
+        '<div style="font-size:10px; color:#b45309; margin-top:4px;">' + (isHi ? '⚠ फ्लैट ब्याज दिखने में कम लगता है लेकिन असल में लगभग दुगना पड़ता है।' : 'Flat rate is deceptively expensive in real APR.') + '</div>' +
+        '</div>';
+
+      // 3. Fixed Card
+      html += '<div style="border:1px solid #0284c7; border-radius:8px; padding:10px; background:#f0f9ff;">' +
+        '<div style="font-weight:700; color:#0369a1; font-size:12px;">3. फिक्स्ड मूलधन (Fixed Principal - सबसे ज्यादा बचत)</div>' +
+        '<div style="font-size:11px; margin-top:4px;">' + (isHi ? 'किस्त (1st ➔ अंतिम): ' : 'Payment: ') + '<strong>' + formatINR(fix1st) + ' ➔ ' + formatINR(fixLast) + '</strong></div>' +
+        '<div style="font-size:11px;">' + (isHi ? 'कुल ब्याज: ' : 'Total Interest: ') + '<strong style="color:#0284c7;">' + formatINR(fixInt) + '</strong></div>' +
+        '<div style="font-size:11px; font-weight:700; color:#0369a1; margin-top:4px;">' + (isHi ? '★ फ्लैट के मुकाबले ₹' + formatINR(flatInt - fixInt) + ' की सीधी बचत!' : 'Saves ' + formatINR(flatInt - fixInt) + ' vs Flat!') + '</div>' +
+        '</div>';
+
+      html += '</div>';
+      document.getElementById('cmpContent').innerHTML = html;
+    }
+
+    function toggleLang() {
+      lang = (lang === 'hi') ? 'en' : 'hi';
+      document.getElementById('langBtn').innerText = (lang === 'hi') ? 'English' : 'हिंदी';
+      document.getElementById('headerSub').innerText = (lang === 'hi') ? 'स्मार्ट ब्याज व ईएमआई कैलकुलेटर' : 'Smart Loan & EMI Engine';
+      document.getElementById('tRedTitle').innerText = (lang === 'hi') ? '1. घटता ब्याज' : '1. Reducing Rate';
+      document.getElementById('tRedSub').innerText = (lang === 'hi') ? 'बैंक ईएमआई' : 'Bank Standard';
+      document.getElementById('tFlatTitle').innerText = (lang === 'hi') ? '2. फ्लैट ब्याज' : '2. Flat Rate';
+      document.getElementById('tFlatSub').innerText = (lang === 'hi') ? 'वाहन/लोकल लोन' : 'Fixed p.a.';
+      document.getElementById('tFixTitle').innerText = (lang === 'hi') ? '3. फिक्स्ड मूलधन' : '3. Fixed Principal';
+      document.getElementById('tFixSub').innerText = (lang === 'hi') ? 'घटती किस्त' : 'Diminishing EMI';
+      document.getElementById('tCompTitle').innerText = (lang === 'hi') ? 'तीनों की तुलना' : 'Compare All 3';
+      document.getElementById('tCompSub').innerText = (lang === 'hi') ? 'बचत देखें' : 'View Savings';
+
+      document.getElementById('lblPrincipal').innerText = (lang === 'hi') ? '1. मूलधन / लोन राशि (Principal)' : '1. Principal / Loan Amount';
+      document.getElementById('lblRate').innerText = (lang === 'hi') ? '2. ब्याज दर (Interest Rate)' : '2. Interest Rate';
+      document.getElementById('lblTenure').innerText = (lang === 'hi') ? '3. अवधि (Tenure)' : '3. Loan Tenure';
+      document.getElementById('lblEmi').innerText = (lang === 'hi') ? '4. प्रति ईएमआई राशि (Monthly EMI)' : '4. Monthly EMI Amount';
+      document.getElementById('bkTitle').innerText = (lang === 'hi') ? '5. हर EMI में मूलधन व ब्याज का बंटवारा' : '5. Per-EMI Principal & Interest Share';
+      document.getElementById('tblTitle').innerText = (lang === 'hi') ? 'महीनेवार किस्तों की सूची (Schedule)' : 'Monthly Amortization Schedule';
+
+      updateRateNote();
+      updateTenureNote();
+      recalc();
+      if (currentMethod === 'compare') renderCompare();
+    }
+
+    // Initialize
+    recalc();
+  </script>
+</body>
+</html>

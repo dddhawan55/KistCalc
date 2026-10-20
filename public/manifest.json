@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "KistCalc - Smart Loan Calculator",
+  "short_name": "KistCalc",
+  "description": "Smart Loan EMI, Principal & Interest Calculator with Reducing, Flat, and Diminishing methods",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#047857",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
